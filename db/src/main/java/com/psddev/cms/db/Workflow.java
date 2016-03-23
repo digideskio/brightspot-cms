@@ -266,6 +266,45 @@ public class Workflow extends Record {
         }
     }
 
+    public static Workflow findWorkflow(Site site, State state) {
+
+        if (state == null) {
+            return null;
+        }
+
+        Workflow workflow = null;
+        ObjectType type = state.getType();
+
+        if (site != null) {
+            workflow = Query
+                    .from(Workflow.class)
+                    .and("sites = ?", site)
+                    .and("contentTypes = ?", type)
+                    .first();
+        }
+
+        if (workflow == null) {
+            workflow = Query
+                    .from(Workflow.class)
+                    .and("sites = missing")
+                    .and("contentTypes = ?", type)
+                    .first();
+        }
+
+        if (workflow == null) {
+            Site owner = state.as(Site.ObjectModification.class).getOwner();
+            if (owner != null) {
+                workflow = Query
+                        .from(Workflow.class)
+                        .and("sites = ?", owner)
+                        .and("contentTypes = ?", type)
+                        .first();
+            }
+        }
+
+        return workflow;
+    }
+
     @FieldInternalNamePrefix("cms.workflow.")
     public static class Data extends Modification<Object> implements VisibilityLabel, VisibilityValues {
 
@@ -358,10 +397,7 @@ public class Workflow extends Record {
             String currentState = getCurrentState();
 
             if (currentState != null) {
-                Workflow workflow = Query
-                        .from(Workflow.class)
-                        .where("contentTypes = ?", getState().getType())
-                        .first();
+                Workflow workflow = findWorkflow(as(Site.ObjectModification.class).getOwner(), getState());
 
                 if (workflow != null) {
                     for (WorkflowState s : workflow.getStates()) {

@@ -751,19 +751,7 @@ wp.writeHeader(editingState.getType() != null ? editingState.getType().getLabel(
                                 draft != null ||
                                 editingState.as(Workflow.Data.class).getCurrentState() != null)) {
 
-                            Workflow workflow = Query
-                                    .from(Workflow.class)
-                                    .and("sites = ?", site)
-                                    .and("contentTypes = ?", editingState.getType())
-                                    .first();
-
-                            if (workflow == null) {
-                                workflow = Query
-                                        .from(Workflow.class)
-                                        .and("sites = missing")
-                                        .and("contentTypes = ?", editingState.getType())
-                                        .first();
-                            }
+                            Workflow workflow = Workflow.findWorkflow(site, editingState);
 
                             if (workflow != null) {
                                 State workflowParentState = draft != null ? draft.getState() : editingState;

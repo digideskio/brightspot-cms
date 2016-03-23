@@ -3621,7 +3621,7 @@ public class ToolPageContext extends WebPageContext {
         try {
             state.beginWrites();
 
-            Workflow workflow = Query.from(Workflow.class).where("contentTypes = ?", state.getType()).first();
+            Workflow workflow = Workflow.findWorkflow(getSite(), state);
 
             if (workflow != null) {
                 WorkflowTransition transition = workflow.getTransitions().get(action);
